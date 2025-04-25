@@ -381,11 +381,23 @@ with tab1:
                         Axis_x = data.columns[0]
 
                         dentro_1 = data.columns[1]
+                        #colocando gráfico um ao lado do outro
+                        col1, col2 = st.columns(2)
 
-                        fig, ax = plt.subplots(figsize=(10, 6))
-                        sns.boxplot(x=Axis_x, y=Eixo_y, hue=dentro_1, palette="Set2", data=data, ax=ax)
-                        sns.despine(offset=10, trim=True)
-                        st.pyplot(fig)
+                        with col1:
+                            fig, ax = plt.subplots(figsize=(10, 6))
+                            sns.boxplot(x=Axis_x, y=Eixo_y, hue=dentro_1, palette="Set2", data=data, ax=ax)
+                            sns.despine(offset=10, trim=True)
+                            st.pyplot(fig)
+
+                        with col2:
+
+                            st.subheader('Gráfico de barras')
+                            fig3, ax = plt.subplots(figsize=(10, 6))
+                            sns.barplot(x=Axis_x, y=Eixo_y, hue=dentro_1, palette="Set2",errorbar = 'sd', width = 0.5, data=data, ax=ax)
+                            plt.ylim(0)
+                            #sns.despine(offset=10, trim=True)
+                            st.pyplot(fig3)
 
 
 
@@ -410,13 +422,33 @@ with tab1:
 
                                     if ordem != 'Selecione' and ordem2 != "Selecione" and ordem != ordem2:
                                         ordem_desejada = [ordem , ordem2]
+                                        options = ["Blues", "BuGn", "Set1","Set2","Set3","viridis","magma", "Pastel1", "Pastel2", "colorblind","Accent", "tab10","tab20","tab20b",'tab20c', "Paired"]
+
+                                        cor_padrão = "Set2"
+                                        cores = st.selectbox('Escolha a cor de interesse:', ['Cores']+ options, index = 0)
+                                        st.success(f"Você escolheu: {cores}.")
+                                        if  cores == 'Cores':
+                                            cores = cor_padrão
+
+
                                         fig, ax = plt.subplots(figsize=(10, 6))
                                         sns.boxplot(x=Axis_x, y=Eixo_y, hue=dentro_1, order=ordem_desejada,
-                                                     palette="Set2", data=data, ax=ax)
+                                                     palette=cores, data=data, ax=ax)
                                         sns.despine(offset=10, trim=True)
                                         st.pyplot(fig)
+
+                                        st.subheader('Gráfico de barras')
+                                        fig3, ax = plt.subplots(figsize=(10, 6))
+                                        sns.barplot(x=Axis_x, y=Eixo_y, hue=dentro_1, order=ordem_desejada, palette=cores, errorbar='sd',
+                                                    width=0.5, data=data, ax=ax)
+                                        plt.ylim(0)
+                                        # sns.despine(offset=10, trim=True)
+                                        st.pyplot(fig3)
+
                                     else:
                                         st.warning('Escolha dois níveis diferentes')
+
+
 
                             escolha_8 = st.radio(f"Você gostaria de alterar os níveis da variável categórica:{categorica_2}", ['Sim', 'Não'])
                             if escolha_8 ==  'Sim':
@@ -445,25 +477,38 @@ with tab1:
                                                                 value=Eixo_y)
                                     nome_eixo_x = st.text_input("Digite o nome que você quer para o eixo X:", value = Axis_x)
 
+                                    st.subheader(f"Gráfico de interação  {categorica} e {categorica_2}")
                                     fig, ax = plt.subplots(figsize=(14, 8))
                                     sns.boxplot(x=Axis_x, y=Eixo_y, hue=dentro_1,order=ordem_desejada,hue_order= ordem_desejada2, palette="Set2", data=data, ax=ax)
                                     ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
                                     ax.set_xlabel(nome_eixo_x, fontsize=14, weight='bold')
                                     sns.despine(offset=10, trim=True)
+
                                     st.pyplot(fig)
 
+
+
+
                                     # Salvar a figura em um arquivo PNG
-                                    fig.savefig("grafico_boxplot.png", bbox_inches='tight')  # Salva a figura como .png
+                                    fig.savefig(f"Gráfico de interação {categorica} e {categorica_2}.png",dpi=300,  bbox_inches='tight')  # Salva a figura como .png
 
                                     # Cria um botão para download
-                                    with open("grafico_boxplot.png", "rb") as f:
+                                    with open(f"Gráfico de interação {categorica} e {categorica_2}.png", "rb") as f:
                                         st.download_button(
                                             label="Baixar o gráfico",  # Nome do botão
                                             data=f,  # Dados do arquivo
-                                            file_name="grafico_boxplot.png",  # Nome do arquivo a ser baixado
+                                            file_name=f"Gráfico de interação {categorica} e {categorica_2}.png",  # Nome do arquivo a ser baixado
                                             mime="image/png"  # Tipo MIME do arquivo
 
                                         )
+                                        fig2, ax = plt.subplots(figsize=(14, 8))
+                                        sns.barplot(x=Axis_x, y=Eixo_y, hue=dentro_1, order=ordem_desejada,
+                                                    hue_order=ordem_desejada2, palette="Set2", data=data,width = 0.5,  ax=ax,
+                                                    errorbar='sd')
+                                        ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
+                                        ax.set_xlabel(nome_eixo_x, fontsize=14, weight='bold')
+                                        plt.ylim(0)
+                                        st.pyplot(fig2)
 
 
 
@@ -475,7 +520,7 @@ with tab1:
 
                         escolha_10 = st.radio('Você gostaria de ver os gráfico sem interação?',['Sim', 'Não'])
                         if escolha_10 == 'Sim':
-                            st.subheader(f'Gráfico para a categoria {categorica_2}')
+                            st.subheader(f'Gráfico {categorica_2} ')
                             fig, ax = plt.subplots(figsize=(14, 8))
                             sns.boxplot( y=Eixo_y, hue=dentro_1,
                                         hue_order=ordem_desejada2, palette="Set2", data=data, ax=ax)
@@ -483,36 +528,38 @@ with tab1:
                             sns.despine(offset=10, trim=True)
                             st.pyplot(fig)
 
-                            # Cria um botão para download
-                            with open("grafico_boxplot.png", "rb") as f:
-                                st.download_button(
-                                    label="Baixar o gráfico",  # Nome do botão
-                                    data=f,  # Dados do arquivo
-                                    file_name=f"grafico_boxplot{categorica_2}.png",  # Nome do arquivo a ser baixado
-                                    mime="image/png"  # Tipo MIME do arquivo
+                            fig.savefig(f"Gráfico {categorica_2}.png",dpi=300,
+                                        bbox_inches='tight')  # Sem espaço antes de .png
 
+                            with open(f"Gráfico {categorica_2}.png", "rb") as f:
+                                st.download_button(
+                                    label="Baixar o gráfico",
+                                    data=f,
+                                    file_name=f"Gráfico {categorica_2}.png",
+                                    mime="image/png"
                                 )
 
+                            st.subheader(f"Gráfico {categorica}")
 
-                            st.subheader(f'Gráfico para a categoria {categorica}')
                             fig, ax = plt.subplots(figsize=(14, 8))
-                            sns.boxplot(x=Axis_x, y=Eixo_y,  order=ordem_desejada,
+                            sns.boxplot(x=Axis_x, y=Eixo_y, order=ordem_desejada,
                                         palette="Set2", data=data, ax=ax)
                             ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
                             ax.set_xlabel(nome_eixo_x, fontsize=14, weight='bold')
                             sns.despine(offset=10, trim=True)
                             st.pyplot(fig)
 
-                            # Cria um botão para download
-                            with open("grafico_boxplot.png", "rb") as f:
+                            # Salvar a figura com nome seguro
+                            fig.savefig(f"Gráfico {categorica}.png", dpi=300,bbox_inches='tight')
+
+                            # Botão de download
+                            with open(f"Gráfico {categorica}.png", "rb") as f:
                                 st.download_button(
-                                    label="Baixar o gráfico",  # Nome do botão
-                                    data=f,  # Dados do arquivo
-                                    file_name=f"grafico_boxplot {categorica}.png",  # Nome do arquivo a ser baixado
-                                    mime="image/png"  # Tipo MIME do arquivo
-
+                                    label="Baixar o gráfico",
+                                    data=f,
+                                    file_name=f"Gráfico {categorica}.png",
+                                    mime="image/png"
                                 )
-
 
     escolhas = []
     if variavel == 3:
