@@ -498,17 +498,43 @@ with tab1:
                                             label="Baixar o gráfico",  # Nome do botão
                                             data=f,  # Dados do arquivo
                                             file_name=f"Gráfico de interação {categorica} e {categorica_2}.png",  # Nome do arquivo a ser baixado
-                                            mime="image/png"  # Tipo MIME do arquivo
-
+                                            mime="image/png"  # Tipo MIME do arquiv
                                         )
+
+
+                                        #grráfico de barras e download
+                                        st.subheader(f'Gráfico de barras interação {categorica} e {categorica_2}')
                                         fig2, ax = plt.subplots(figsize=(14, 8))
                                         sns.barplot(x=Axis_x, y=Eixo_y, hue=dentro_1, order=ordem_desejada,
-                                                    hue_order=ordem_desejada2, palette="Set2", data=data,width = 0.5,  ax=ax,
+                                                    hue_order=ordem_desejada2, palette= cores,linewidth = 1, edgecolor = 'black', data=data,width = 0.5,  ax=ax,
                                                     errorbar='sd')
                                         ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
                                         ax.set_xlabel(nome_eixo_x, fontsize=14, weight='bold')
                                         plt.ylim(0)
                                         st.pyplot(fig2)
+
+                                        # Salvar a figura em um arquivo PNG
+                                        fig2.savefig(f"Gráfico de interação barras {categorica} e {categorica_2}.png", dpi=300,
+                                                    bbox_inches='tight')  # Salva a figura como .png
+
+                                        # Cria um botão para download
+                                        with open(f"Gráfico de interação barras {categorica} e {categorica_2}.png", "rb") as f:
+                                            st.download_button(
+                                                label="Baixar o gráfico",  # Nome do botão
+                                                data=f,  # Dados do arquivo
+                                                file_name=f"Gráfico de interação barras {categorica} e {categorica_2}.png",
+                                                # Nome do arquivo a ser baixado
+                                                mime="image/png"  # Tipo MIME do arquivo
+
+                                            )
+
+
+
+
+
+
+
+
 
 
 
@@ -523,7 +549,7 @@ with tab1:
                             st.subheader(f'Gráfico {categorica_2} ')
                             fig, ax = plt.subplots(figsize=(14, 8))
                             sns.boxplot( y=Eixo_y, hue=dentro_1,
-                                        hue_order=ordem_desejada2, palette="Set2", data=data, ax=ax)
+                                        hue_order=ordem_desejada2, palette=cores,  data=data, ax=ax)
                             ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
                             sns.despine(offset=10, trim=True)
                             st.pyplot(fig)
@@ -537,13 +563,42 @@ with tab1:
                                     data=f,
                                     file_name=f"Gráfico {categorica_2}.png",
                                     mime="image/png"
+
                                 )
+
+
+
+                                #gráfico de barras:
+                                st.subheader(f'Gráfico {categorica_2} ')
+                                fig8, ax = plt.subplots(figsize=(14, 8))
+                                sns.barplot (y=Eixo_y, hue=dentro_1,
+                                            hue_order=ordem_desejada2, palette=cores, linewidth = 1, edgecolor = 'black',width = 0.4, data=data, ax=ax)
+                                ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
+                                plt.ylim(0)
+                                st.pyplot(fig8)
+
+                                fig8.savefig(f"Gráfico de barras {categorica_2}.png", dpi=300,
+                                            bbox_inches='tight')  # Sem espaço antes de .png
+
+                                with open(f"Gráfico de barras {categorica_2}.png", "rb") as f:
+                                    st.download_button(
+                                        label="Baixar o gráfico",
+                                        data=f,
+                                        file_name=f"Gráfico de barras {categorica_2}.png",
+                                        mime="image/png"
+
+                                    )
+
+
+
+
+
 
                             st.subheader(f"Gráfico {categorica}")
 
                             fig, ax = plt.subplots(figsize=(14, 8))
                             sns.boxplot(x=Axis_x, y=Eixo_y, order=ordem_desejada,
-                                        palette="Set2", data=data, ax=ax)
+                                        palette= cores, data=data, ax=ax)
                             ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
                             ax.set_xlabel(nome_eixo_x, fontsize=14, weight='bold')
                             sns.despine(offset=10, trim=True)
@@ -560,6 +615,33 @@ with tab1:
                                     file_name=f"Gráfico {categorica}.png",
                                     mime="image/png"
                                 )
+
+
+
+                                #gráfico de barras:
+
+                                st.subheader(f"Gráfico de barras {categorica}")
+
+                                fig11, ax = plt.subplots(figsize=(14, 8))
+                                sns.barplot(x=Axis_x, y=Eixo_y, order=ordem_desejada,
+                                            palette=cores,linewidth = 1, edgecolor = 'black',width = 0.4, data=data, ax=ax)
+                                ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
+                                ax.set_xlabel(nome_eixo_x, fontsize=14, weight='bold')
+                                #sns.despine(offset=10, trim=True)
+                                plt.ylim(0)
+                                st.pyplot(fig11)
+
+                                # Salvar a figura com nome seguro
+                                fig11.savefig(f"Gráfico barras2 {categorica}.png", dpi=300, bbox_inches='tight')
+
+                                # Botão de download
+                                with open(f"Gráfico barras2 {categorica}.png", "rb") as f:
+                                    st.download_button(
+                                        label="Baixar o gráfico",
+                                        data=f,
+                                        file_name=f"Gráfico barras2 {categorica}.png",
+                                        mime="image/png"
+                                    )
 
     escolhas = []
     if variavel == 3:
