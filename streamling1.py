@@ -1,6 +1,4 @@
-
-
-
+import streamlit
 import streamlit  as st
 import pandas as pd
 import seaborn as sns
@@ -213,6 +211,8 @@ with tab1:
             else:
                 st.warning("selecione as variáveis")
             st.warning('Se quiser continuar a análise, então clica na aba 2 acima **Pressupostos da Anova**')
+
+
 
 
 
@@ -476,15 +476,15 @@ with tab1:
                                     nome_eixo_y = st.text_input("Digite o nome que você quer para o eixo Y:",
                                                                 value=Eixo_y)
                                     nome_eixo_x = st.text_input("Digite o nome que você quer para o eixo X:", value = Axis_x)
+                                    with st.spinner("Por favor, aguarde..."):
+                                        st.subheader(f"Gráfico de interação  {categorica} e {categorica_2}")
+                                        fig, ax = plt.subplots(figsize=(14, 8))
+                                        sns.boxplot(x=Axis_x, y=Eixo_y, hue=dentro_1,order=ordem_desejada,hue_order= ordem_desejada2, palette="Set2", data=data, ax=ax)
+                                        ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
+                                        ax.set_xlabel(nome_eixo_x, fontsize=14, weight='bold')
+                                        sns.despine(offset=10, trim=True)
 
-                                    st.subheader(f"Gráfico de interação  {categorica} e {categorica_2}")
-                                    fig, ax = plt.subplots(figsize=(14, 8))
-                                    sns.boxplot(x=Axis_x, y=Eixo_y, hue=dentro_1,order=ordem_desejada,hue_order= ordem_desejada2, palette="Set2", data=data, ax=ax)
-                                    ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
-                                    ax.set_xlabel(nome_eixo_x, fontsize=14, weight='bold')
-                                    sns.despine(offset=10, trim=True)
-
-                                    st.pyplot(fig)
+                                        st.pyplot(fig)
 
 
 
@@ -642,6 +642,180 @@ with tab1:
                                         file_name=f"Gráfico barras2 {categorica}.png",
                                         mime="image/png"
                                     )
+
+                    with tab3:
+                        st.header(f"Pressupostos da ANOVA ")
+                        st.write(f'Modelo completo: {categorica}:{categorica_2}')
+                        st.write(f"Parâmetro: {continua}")
+                        st.subheader('Teste de normalidade de Shapiro Wilk')
+                        st.write('H0: Os resíduos seguem uma distribuição normal ')
+                        st.write('Se P < 0.05, então rejeita H0 : O resíduos não segue uma distribuição normal ')
+
+
+
+                        formula = f'{continua}~{categorica_2}*{categorica}'
+                        # print(formula)
+                        # modelo
+                        model = smf.ols(formula, data= data).fit()
+                        df_resid = data.copy()
+                        df_resid['Residuos2'] = model.resid
+                        stat, p_valor = shapiro(df_resid['Residuos2'])
+                        if p_valor > 0.05:
+                            reject = 'Não rejeita a H0'
+                            decisao= 'Os resíduos  seguem uma distribuição  normal '
+                            st.success(f' P-valor =  {p_valor}')
+                            st.success(f'Decisão {reject}')
+                            st.success(decisao )
+                        else:
+                            reject = 'Rejeita H0 '
+                            decisao = 'Os resíduos não  seguem uma distribuição  normal '
+                            st.success(f' P-valor =  {p_valor}')
+                            st.success(f'Decisão {reject}')
+                            st.success(decisao)
+                        st.subheader('Curva de distribuição KDE')
+                        # plotar a curva de KDE
+                        fig5, ax = plt.subplots()
+                        sns.kdeplot(data=df_resid, x= 'Residuos2', fill=True, alpha=0.3)
+                        ax.set_title(f"Curva de KDE para visualização de normalidade do modelo {categorica}-{categorica_2}")
+                        plt.axvline(0, color='red', linestyle='dashed', linewidth=1)  # Linha central em 0
+                        # sns.stripplot(x=zscore, color='black', jitter=True, alpha=0.5, ax=ax)
+                        st.pyplot(fig5)
+
+                        # Anderson Darling test
+                        # Teste de normalidade de Anderson darling
+
+
+                        st.header("Teste de Normalidade dos resíduos ")
+                        st.subheader('Anderson Darling ')
+                        st.write(f'H0: Os resíduos do modelo: {categorica}-{categorica_2} seguem distribuição normal ')
+                        st.write('H0: Se valor crítico > valor estatístico, então não rejeita H0')
+                        test = anderson(df_resid['Residuos2'], dist='norm')
+                        critical_value = test.critical_values[2]  # O valor crítico para o nível de 5%
+
+                        if test.statistic > critical_value:
+                            reject2 = 'Rejeita H0'
+                            resultado = "Os resíduos não seguem uma distribuição normal "
+                        else:
+                            reject2 = 'Não rejeita H0'
+                            resultado = 'Os resíduos seguem uma distribuição normal '
+
+                        # Exibindo os resultados
+                        print(linha)
+                        st.success(f' Valor crítico: {critical_value} ')
+                        st.success(f'Estatística do teste:  {test.statistic}')
+                        st.success(reject2)
+                        st.success(resultado)
+
+                        #Homogneidade da variância:
+                        st.header('Homogeneidade de variância')
+                        st.subheader("Teste de levene")
+                        st.write('H0: A variãncia dos grupos comparados são iguais a um nível de significância de 5%')
+                        st.write('Se p-valor <0.05, então rejeita H0 e os resíduos não seguem distribuição normal')
+                        agrupamento = df_resid.groupby(categorica)
+                        grupo = []
+                        for nome, dados_grupo in agrupamento:
+                            # print(dados_grupo['Residuos'].values)
+                            grupo.append(dados_grupo['Residuos2'].values)
+                            # print(x)
+                        stat, p_value = stats.levene(*grupo)
+                        if p_value < 0.05:
+                            reject = 'Rejeita a H0'
+                            homoge_neo = 'não são '
+                            resposta = 'Os resíduos não seguem uma distribuição normal'
+                        else:
+                            reject = 'Não rejeita H0'
+                            homoge_neo = 'são '
+                            resposta = 'Os resíduos seguem uma distribuição normal '
+                        st.success(
+                            f' P-valor :  {p_value}' )
+                        st.success(f"A variância dos níveis comparados {homoge_neo} homogêneos")
+                        st.success(f'Decisão:  {reject} ')
+                        st.success(resposta)
+
+
+
+
+                        #teste de barlett
+                        st.subheader('Teste de barlett para homogeneidade de variância')
+                        st.write('H0: A variãncia dos grupos comparados são iguais a um nível de significância de 5%')
+                        st.write('Se p-valor <0.05, então rejeita H0 e os resíduos não seguem distribuição normal')
+                        stat, p = stats.bartlett(*grupo)
+                        if p_value < 0.05:
+                            reject = 'Rejeita a H0'
+                            homoge_neo = 'não são '
+                            decisão = 'Os resíduos não são homogênos(iguais)'
+                        else:
+                            reject = 'Não rejeita H0'
+                            homoge_neo = 'são '
+                            decisao = ' As variâncias dos resíduos são homogêneos '
+
+                        st.success(f'P-valor :  {p_value}')
+                        st.success(f'a variância dos níveis comparados {homoge_neo} homogêneos')
+                        st.success(reject)
+                        st.success(decisao)
+
+                        st.header('ANOVA')
+                        model = smf.ols(formula, data=data).fit()
+                        anova_table = anova_lm(model)
+                        st.dataframe(anova_table)
+                        st.write(f"R squared adjusted: {model.rsquared_adj}")
+                        p_value = anova_table['PR(>F)'][2]
+
+                        if p_value < 0.05:
+                            print(f'Análise de tukey para o moddelo {categorica}: {categorica_2}')
+                            df_clean2 = data.copy()
+                            df_clean2['Combinação'] = df_clean2[categorica].astype(str) + ':' + df_clean2[
+                                categorica_2].astype(str)
+                            # Garantindo que a coluna Combinação seja categórica
+                            df_clean2['Combinação'] = pd.Categorical(df_clean2['Combinação'])
+
+                            mc = MultiComparison(df_clean2.iloc[:, 2], df_clean2['Combinação'])
+                            tukey_test = mc.tukeyhsd(alpha=0.05)
+                            st.dataframe(tukey_test.summary())
+                        else:
+                            st.warning('O testde tukey não pode ser mostrado, pois não houve um p-valor significativo na interação')
+                            st.warning(f'O p-valor foi de {p_value}')
+                            st.warning('Que está acima de 0.05')
+                            anova2 = st.radio('Você deseja fazer a análise dos fatores isolados?', ['Sim','Não'])
+
+                            if anova2 == 'Sim':
+                                st.header('Análise dos fatores isolados')
+                                st.subheader(f'Modelo: {categorica} +{categorica_2}')
+                                formula = f'{continua}~{categorica}+{categorica_2}'
+                                model = smf.ols(formula, data=data).fit()
+                                anova_table1 = anova_lm(model)
+                                st.dataframe(anova_table1)
+                                st.write(f"R squared adjusted: {model.rsquared_adj}")
+                                p_value1 = anova_table['PR(>F)'][1]
+                                p_value2 = anova_table['PR(>F)'][0]
+
+                                if p_value1 < 0.05:
+                                    st.subheader(f'Análise de tukey para  o fator   {categorica}')
+
+                                    categorico1 = pd.Categorical(data.iloc[:,0]
+                                       )  # transformando a primeira coluna em categórica
+
+                                    mc = MultiComparison(data.iloc[:, 2], categorico1)
+                                    tukey_test1 = mc.tukeyhsd(alpha=0.05)
+                                    st.dataframe(tukey_test1.summary())
+                                else:
+                                    st.warning(f'O valor de p para o fator {categorica} não foi significativo')
+                                    st.warning(p_value1)
+                                    st.warning('Não prossegue a análise de contraste')
+
+                                if p_value2< 0.05:
+
+                                    st.subheader(f'Análise de tukey para  o fator  {categorica_2}')
+                                    categorico2 = pd.Categorical(data.iloc[:,1]
+                                       )  # transforma a segunda coluna em categórica
+
+                                    mc2= MultiComparison(data.iloc[:, 2], categorico2)
+                                    tukey_test2 = mc2.tukeyhsd(alpha=0.05)
+                                    st.dataframe(tukey_test2.summary())
+                                else:
+                                    st.warning(f'O valor de p para o fator {categorica_2} não foi significativo')
+                                    st.warning(p_value2)
+                                    st.warning('Não prossegue a análise de contraste')
 
     escolhas = []
     if variavel == 3:
