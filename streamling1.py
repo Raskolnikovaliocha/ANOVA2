@@ -32,20 +32,6 @@ st.set_page_config(
     page_icon="🧠",
     layout="centered",
 )
-with st.container(height=320):
-    # Exibe o GIF do corvo
-    video_file = open("D:/Documents/2024.2/Python/dataanalysys/python data science handbook/corvo.mp4", "rb")
-    video_bytes = video_file.read()
-
-    st.video(
-        video_bytes,
-        start_time=0,  # Tempo de início em segundos
-        end_time=None,  # Tempo de término (adicionado em versões recentes)
-        loop= True,     # Repetição contínua
-        autoplay=True, # Reprodução automática
-        muted=True     # Sem áudio
-    )
-
 
 
 
