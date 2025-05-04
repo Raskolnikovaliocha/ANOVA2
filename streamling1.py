@@ -22,7 +22,34 @@ from scipy import stats
 from statsmodels.stats.anova import anova_lm
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 from streamlit import selectbox
-tab1, tab2, tab3 = st.tabs(["Pré-processamento e Análise descritiva", "Exploraçao  pressupostos  Anova", "tukey test e gráficos "])
+
+
+
+
+
+st.set_page_config(
+    page_title="ANOVA App",
+    page_icon="🧠",
+    layout="centered",
+)
+with st.container(height=320):
+    # Exibe o GIF do corvo
+    video_file = open("D:/Documents/2024.2/Python/dataanalysys/python data science handbook/corvo.mp4", "rb")
+    video_bytes = video_file.read()
+
+    st.video(
+        video_bytes,
+        start_time=0,  # Tempo de início em segundos
+        end_time=None,  # Tempo de término (adicionado em versões recentes)
+        loop= True,     # Repetição contínua
+        autoplay=True, # Reprodução automática
+        muted=True     # Sem áudio
+    )
+
+
+
+
+tab1, tab2, tab3 = st.tabs(["Pré-processamento e Análise descritiva", "Gráficos", "Pressupostos-ANOVA/ANOVA/Post-hoc teste "])
 
 with tab1:
     st.title("Aplicativo anova")
@@ -212,15 +239,261 @@ with tab1:
                 st.warning("selecione as variáveis")
             st.warning('Se quiser continuar a análise, então clica na aba 2 acima **Pressupostos da Anova**')
 
+            with tab2:
+                st.header('Análise exploratória')
+                st.subheader('Gráfico boxplot')
+
+                Eixo_y = data.columns[1]
+                print(Eixo_y)
+                Axis_x = data.columns[0]
+
+
+
+                # colocando gráfico um ao lado do outro
+                col1, col2 = st.columns(2)
+
+                with tab2:
+                    st.header('Análise exploratória')
+                    st.subheader('Gráfico boxplot')
+
+
+
+                    # colocando gráfico um ao lado do outro
+                    col1, col2 = st.columns(2)
+
+                    with col1:
+                        fig, ax = plt.subplots(figsize=(10, 6))
+                        sns.boxplot(x=Axis_x, y=Eixo_y,  palette="Set2", data=data, ax=ax)
+                        sns.despine(offset=10, trim=True)
+                        st.pyplot(fig)
+
+                    with col2:
+                        st.subheader('Gráfico de barras')
+                        fig3, ax = plt.subplots(figsize=(10, 6))
+                        sns.barplot(x=Axis_x, y=Eixo_y,  palette="Set2", errorbar='sd', width=0.5,
+                                    data=data, ax=ax)
+                        plt.ylim(0)
+                        # sns.despine(offset=10, trim=True)
+                        st.pyplot(fig3)
+
+                    escolha_6 = st.radio('Você gostaria de alterar os gráficos?', ['Sim', 'Não '])
+                    if escolha_6 == 'Sim':
+
+                        escolha_7 = st.radio(f"Você gostaria de alterar o nível da variável categórica: {categorica}?",
+                                             ['Sim', 'Não'])
+                        if escolha_7 == 'Sim':
+                            data_grouped = data[categorica].unique()
+                            lista = list(data_grouped)
+                            st.write(lista)
+                            tamanho = len(lista)
+                            st.write(tamanho)
+                            ordem_desejada = []
+                            for k in range(tamanho):
+                                selecionado = st.selectbox(f'Escolha a ordem do nível {1+k} ', ['Selecione'] + lista,
+                                                     key=f'ordem_{1+k}')
+                                ordem_desejada.append(selecionado )
+
+                                # Verifica se todos os níveis foram selecionados corretamente
+                                if 'Selecione' not in ordem_desejada and len(set(ordem_desejada)) == len(lista):
+                                    nome_eixo_y = st.text_input("Digite o nome que você quer para o eixo Y:",
+                                                                value=Eixo_y)
+                                    nome_eixo_x = st.text_input("Digite o nome que você quer para o eixo X:",
+                                                                value=Axis_x)
+
+
+
+                                    options = ["Blues", "BuGn", "Set1", "Set2", "Set3", "viridis", "magma", "Pastel1",
+                                               "Pastel2", "colorblind", "Accent", "tab10", "tab20", "tab20b", 'tab20c',
+                                               "Paired"]
+
+                                    cor_padrão = "Set2"
+                                    cores = st.selectbox('Escolha a cor de interesse:', ['Cores'] + options, index=0)
+                                    st.success(f"Você escolheu: {cores}.")
+                                    if cores == 'Cores':
+                                        cores = cor_padrão
+
+                                    st.header('Gráfico boxplot')
+                                    fig23, ax = plt.subplots(figsize=(10, 6))
+                                    sns.boxplot(x=Axis_x, y=Eixo_y, order=ordem_desejada,
+                                                palette=cores, data=data, ax=ax)
+                                    ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
+                                    ax.set_xlabel(nome_eixo_x, fontsize=14, weight='bold')
+                                    sns.despine(offset=10, trim=True)
+
+                                    st.pyplot(fig23)
+
+                                    # Salvar a figura em um arquivo PNG
+                                    fig23.savefig(f"Gráfico de interação {categorica} e {continua}.png", dpi=300,
+                                                bbox_inches='tight')  # Salva a figura como .png
+
+                                    # Cria um botão para download
+                                    with open(f"Gráfico de interação {categorica} e {continua}.png", "rb") as f:
+                                        st.download_button(
+                                            label="Baixar o gráfico",  # Nome do botão
+                                            data=f,  # Dados do arquivo
+                                            file_name=f"Gráfico de interação {categorica} e {continua}.png",
+                                            # Nome do arquivo a ser baixado
+                                            mime="image/png"  # Tipo MIME do arquiv
+                                        )
+
+                                    st.subheader('Gráfico de barras')
+                                    fig3, ax = plt.subplots(figsize=(10, 6))
+                                    sns.barplot(x=Axis_x, y=Eixo_y,  order=ordem_desejada, palette=cores,
+                                                errorbar='sd',
+                                                width=0.5, data=data, ax=ax)
+                                    ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
+                                    ax.set_xlabel(nome_eixo_x, fontsize=14, weight='bold')
+                                    plt.ylim(0)
+                                    # sns.despine(offset=10, trim=True)
+                                    st.pyplot(fig3)
+
+                                    # Salvar a figura em um arquivo PNG
+                                    fig3.savefig(f"Gráfico de interação {categorica} e {continua}_barplot.png", dpi=300,
+                                                  bbox_inches='tight')  # Salva a figura como .png
+
+                                    # Cria um botão para download
+                                    with open(f"Gráfico de interação {categorica} e {continua}_barplot.png", "rb") as f:
+                                        st.download_button(
+                                            label="Baixar o gráfico",  # Nome do botão
+                                            data=f,  # Dados do arquivo
+                                            file_name=f"Gráfico de interação {categorica} e {continua}_barplot.png",
+                                            # Nome do arquivo a ser baixado
+                                            mime="image/png"  # Tipo MIME do arquiv
+                                        )
 
 
 
 
+                            else:
+                                st.warning(f'Escolha {k+1} níveis diferentes')
+            with tab3:
+
+                st.header(f"Pressupostos da ANOVA ")
+                st.success(f'Modelo completo: {continua}~{categorica}')
+                st.success(f"Parâmetro: {continua}")
+                st.subheader('Teste de normalidade de Shapiro Wilk')
+                st.write('H0: Os resíduos seguem uma distribuição normal ')
+                st.write('Se P < 0.05, então rejeita H0 : O resíduos não segue uma distribuição normal ')
+                formula = f'{continua}~{categorica}'
+                # print(formula)
+                # modelo
+                model = smf.ols(formula, data=data).fit()
+                df_resid = data.copy()
+                df_resid['Residuos2'] = model.resid
+                stat, p_valor = shapiro(df_resid['Residuos2'])
+                if p_valor > 0.05:
+                    reject = 'Não rejeita a H0'
+                    decisao = 'Os resíduos  seguem uma distribuição  normal '
+                    st.success(f' P-valor =  {p_valor}')
+                    st.success(f'Decisão {reject}')
+                    st.success(decisao)
+                else:
+                    reject = 'Rejeita H0 '
+                    decisao = 'Os resíduos não  seguem uma distribuição  normal '
+                    st.success(f' P-valor =  {p_valor}')
+                    st.success(f'Decisão {reject}')
+                    st.success(decisao)
+                st.subheader('Curva de distribuição KDE')
+                # plotar a curva de KDE
+                fig5, ax = plt.subplots()
+                sns.kdeplot(data=df_resid, x='Residuos2', fill=True, alpha=0.3)
+                ax.set_title(f"Curva de KDE para visualização de normalidade do modelo {categorica}-{continua}")
+                plt.axvline(0, color='red', linestyle='dashed', linewidth=1)  # Linha central em 0
+                # sns.stripplot(x=zscore, color='black', jitter=True, alpha=0.5, ax=ax)
+                st.pyplot(fig5)
+
+                # Anderson Darling test
+                # Teste de normalidade de Anderson darling
+
+                st.header("Teste de Normalidade dos resíduos ")
+                st.subheader('Anderson Darling ')
+                st.write(f'H0: Os resíduos do modelo: {categorica}-{continua} seguem distribuição normal ')
+                st.write('H0: Se valor crítico > valor estatístico, então não rejeita H0')
+                test = anderson(df_resid['Residuos2'], dist='norm')
+                critical_value = test.critical_values[2]  # O valor crítico para o nível de 5%
+
+                if test.statistic > critical_value:
+                    reject2 = 'Rejeita H0'
+                    resultado = "Os resíduos não seguem uma distribuição normal "
+                else:
+                    reject2 = 'Não rejeita H0'
+                    resultado = 'Os resíduos seguem uma distribuição normal '
+
+                # Exibindo os resultados
+                print(linha)
+                st.success(f' Valor crítico: {critical_value} ')
+                st.success(f'Estatística do teste:  {test.statistic}')
+                st.success(reject2)
+                st.success(resultado)
+
+                # Homogneidade da variância:
+                st.header('Homogeneidade de variância')
+                st.subheader("Teste de levene")
+                st.write('H0: A variãncia dos grupos comparados são iguais a um nível de significância de 5%')
+                st.write('Se p-valor <0.05, então rejeita H0 e os resíduos não seguem distribuição normal')
+                agrupamento = df_resid.groupby(categorica)
+                grupo = []
+                for nome, dados_grupo in agrupamento:
+                    # print(dados_grupo['Residuos'].values)
+                    grupo.append(dados_grupo['Residuos2'].values)
+                    # print(x)
+                stat, p_value = stats.levene(*grupo)
+                if p_value < 0.05:
+                    reject = 'Rejeita a H0'
+                    homoge_neo = 'não são '
+                    resposta = 'Os resíduos não seguem uma distribuição normal'
+                else:
+                    reject = 'Não rejeita H0'
+                    homoge_neo = 'são '
+                    resposta = 'Os resíduos seguem uma distribuição normal '
+                st.success(
+                    f' P-valor :  {p_value}')
+                st.success(f"A variância dos níveis comparados {homoge_neo} homogêneos")
+                st.success(f'Decisão:  {reject} ')
+                st.success(resposta)
+
+                # teste de barlett
+                st.subheader('Teste de barlett para homogeneidade de variância')
+                st.write('H0: A variãncia dos grupos comparados são iguais a um nível de significância de 5%')
+                st.write('Se p-valor <0.05, então rejeita H0 e os resíduos não seguem distribuição normal')
+                stat, p = stats.bartlett(*grupo)
+                if p_value < 0.05:
+                    reject = 'Rejeita a H0'
+                    homoge_neo = 'não são '
+                    decisão = 'Os resíduos não são homogênos(iguais)'
+                else:
+                    reject = 'Não rejeita H0'
+                    homoge_neo = 'são '
+                    decisao = ' As variâncias dos resíduos são homogêneos '
+
+                st.success(f'P-valor :  {p_value}')
+                st.success(f'a variância dos níveis comparados {homoge_neo} homogêneos')
+                st.success(reject)
+                st.success(decisao)
+
+                st.header('ANOVA')
+                model = smf.ols(formula, data=data).fit()
+                anova_table = anova_lm(model)
+                st.dataframe(anova_table)
+                st.write(f"R squared adjusted: {model.rsquared_adj}")
+                p_value = anova_table['PR(>F)'][0]
 
 
 
+                if p_value < 0.05:
+                    st.subheader(f'Análise de tukey para  X: {categorica} e y: {continua}')
 
-                    #boxplot:
+                    categorico1 = pd.Categorical(data.iloc[:, 0]
+                                                 )  # transformando a primeira coluna em categórica
+
+                    mc = MultiComparison(data.iloc[:, 1], categorico1)
+                    tukey_test1 = mc.tukeyhsd(alpha=0.05)
+                    st.dataframe(tukey_test1.summary())
+                else:
+                    st.warning(f' Seu p-valor {p_value} não foi significativo')
+                    st.warning('Então não é feito o teste de tukey ')
+
+        #boxplot:
                 # padronização dos dados:
 
 
@@ -411,17 +684,16 @@ with tab1:
                                 data_grouped = data[categorica].unique()
                                 lista = list(data_grouped)
                                 tamanho = len(lista)
+                                ordem_desejada = []
+                                for k in range(tamanho):
+                                    selecionado = st.selectbox(f'Escolha a ordem do nível {1 + k} ',
+                                                               ['Selecione'] + lista,
+                                                               key=f'ordem1_{20 + k}')
+                                    ordem_desejada.append(selecionado)
 
-                                if tamanho == 2:
-                                    ordem = st.selectbox('Escolha a ordem do nível ', ['Selecione'] + lista,
-                                                              key='15')
-                                    ordem2 = st.selectbox('Escolha a ordem do nível ', ['Selecione'] + lista,
+                                    # Verifica se todos os níveis foram selecionados corretamente
+                                    if 'Selecione' not in ordem_desejada and len(set(ordem_desejada)) == len(lista):
 
-                                                        key='16')
-
-
-                                    if ordem != 'Selecione' and ordem2 != "Selecione" and ordem != ordem2:
-                                        ordem_desejada = [ordem , ordem2]
                                         options = ["Blues", "BuGn", "Set1","Set2","Set3","viridis","magma", "Pastel1", "Pastel2", "colorblind","Accent", "tab10","tab20","tab20b",'tab20c', "Paired"]
 
                                         cor_padrão = "Set2"
@@ -457,22 +729,17 @@ with tab1:
                                 lista = list(data_grouped)
                                 tamanho = len(lista)
 
-                                ordem3= st.selectbox('Escolha a ordem do nível1 ', ['Selecione'] + lista,
-                                                     key='10')
-                                ordem4 = st.selectbox('Escolha a ordem do nível2 ', ['Selecione'] + lista,
+                                ordem_desejada2 = []
+                                for k in range(tamanho):
+                                    selecionado = st.selectbox(f'Escolha a ordem do nível {1 + k} ',
+                                                               ['Selecione'] + lista,
+                                                               key=f'ordem2_{30 + k}')
+                                    ordem_desejada2.append(selecionado)
 
-                                                      key='11')
+                                    # Verifica se todos os níveis foram selecionados corretamente
 
-                                ordem5 = st.selectbox('Escolha a ordem do nível3 ', ['Selecione'] + lista,
+                                if 'Selecione' not in ordem_desejada and len(set(ordem_desejada2)) == len(lista):
 
-                                                      key='12')
-
-                                ordem6 = st.selectbox('Escolha a ordem do nível4 ', ['Selecione'] + lista,
-
-                                                      key='13')
-
-                                if ordem3 != 'Selecione' and ordem4 != "Selecione" and ordem5 != "Selecione" and ordem6 != "Selecione" :
-                                    ordem_desejada2 = [ordem3, ordem4, ordem5, ordem6]
                                     nome_eixo_y = st.text_input("Digite o nome que você quer para o eixo Y:",
                                                                 value=Eixo_y)
                                     nome_eixo_x = st.text_input("Digite o nome que você quer para o eixo X:", value = Axis_x)
@@ -547,14 +814,14 @@ with tab1:
                         escolha_10 = st.radio('Você gostaria de ver os gráfico sem interação?',['Sim', 'Não'])
                         if escolha_10 == 'Sim':
                             st.subheader(f'Gráfico {categorica_2} ')
-                            fig, ax = plt.subplots(figsize=(14, 8))
+                            fig51, ax = plt.subplots(figsize=(14, 8))
                             sns.boxplot( y=Eixo_y, hue=dentro_1,
                                         hue_order=ordem_desejada2, palette=cores,  data=data, ax=ax)
                             ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
                             sns.despine(offset=10, trim=True)
-                            st.pyplot(fig)
+                            st.pyplot(fig51)
 
-                            fig.savefig(f"Gráfico {categorica_2}.png",dpi=300,
+                            fig51.savefig(f"Gráfico {categorica_2}.png",dpi=300,
                                         bbox_inches='tight')  # Sem espaço antes de .png
 
                             with open(f"Gráfico {categorica_2}.png", "rb") as f:
@@ -596,16 +863,16 @@ with tab1:
 
                             st.subheader(f"Gráfico {categorica}")
 
-                            fig, ax = plt.subplots(figsize=(14, 8))
+                            fig50, ax = plt.subplots(figsize=(14, 8))
                             sns.boxplot(x=Axis_x, y=Eixo_y, order=ordem_desejada,
                                         palette= cores, data=data, ax=ax)
                             ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
                             ax.set_xlabel(nome_eixo_x, fontsize=14, weight='bold')
                             sns.despine(offset=10, trim=True)
-                            st.pyplot(fig)
+                            st.pyplot(fig50)
 
                             # Salvar a figura com nome seguro
-                            fig.savefig(f"Gráfico {categorica}.png", dpi=300,bbox_inches='tight')
+                            fig50.savefig(f"Gráfico {categorica}.png", dpi=300,bbox_inches='tight')
 
                             # Botão de download
                             with open(f"Gráfico {categorica}.png", "rb") as f:
@@ -772,6 +1039,9 @@ with tab1:
                             mc = MultiComparison(df_clean2.iloc[:, 2], df_clean2['Combinação'])
                             tukey_test = mc.tukeyhsd(alpha=0.05)
                             st.dataframe(tukey_test.summary())
+                            #gráfico
+                            st.pyplot(fig2)
+
                         else:
                             st.warning('O testde tukey não pode ser mostrado, pois não houve um p-valor significativo na interação')
                             st.warning(f'O p-valor foi de {p_value}')
@@ -798,6 +1068,13 @@ with tab1:
                                     mc = MultiComparison(data.iloc[:, 2], categorico1)
                                     tukey_test1 = mc.tukeyhsd(alpha=0.05)
                                     st.dataframe(tukey_test1.summary())
+                                    col2, col3 = st.columns(2)
+                                    with col2:
+                                        st.pyplot(fig11)
+                                    with col3:
+                                        st.pyplot(fig50)
+
+
                                 else:
                                     st.warning(f'O valor de p para o fator {categorica} não foi significativo')
                                     st.warning(p_value1)
@@ -812,6 +1089,17 @@ with tab1:
                                     mc2= MultiComparison(data.iloc[:, 2], categorico2)
                                     tukey_test2 = mc2.tukeyhsd(alpha=0.05)
                                     st.dataframe(tukey_test2.summary())
+                                    cols = st.columns(2)  # Cria 3 colunas
+                                      # Pega a primeira coluna
+                                    col2 = cols[0]
+                                    col3 = cols[1]
+
+                                    with col2:
+                                        st.pyplot(fig8)
+                                    with col3:
+                                        st.pyplot(fig51)
+
+
                                 else:
                                     st.warning(f'O valor de p para o fator {categorica_2} não foi significativo')
                                     st.warning(p_value2)
