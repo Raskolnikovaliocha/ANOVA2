@@ -780,6 +780,11 @@ with tab1:
                                                 mime="image/png"  # Tipo MIME do arquivo
 
                                             )
+                                        data_grouped = data.groupby([categorica, categorica_2])[
+                                            continua].describe().reset_index()
+                                        st.subheader(
+                                            f'Análise das médias para a interação dos fatores  {categorica} e {categorica_2}')
+                                        st.dataframe(data_grouped)
 
 
 
@@ -842,6 +847,11 @@ with tab1:
 
                                     )
 
+                                    data_grouped2 = data.groupby(categorica_2)[continua].describe().reset_index()
+
+                                    st.subheader(f'Análise das médias para o fator {categorica_2}')
+                                    st.dataframe(data_grouped2)
+
 
 
 
@@ -895,6 +905,12 @@ with tab1:
                                         file_name=f"Gráfico barras2 {categorica}.png",
                                         mime="image/png"
                                     )
+
+                                data_grouped1 = data.groupby(categorica)[continua].describe().reset_index()
+
+                                st.subheader(f'Análise das médias para o fator {categorica}')
+                                st.dataframe(data_grouped1)
+
 
                     with tab3:
                         st.header(f"Pressupostos da ANOVA ")
@@ -1011,6 +1027,9 @@ with tab1:
                         model = smf.ols(formula, data=data).fit()
                         anova_table = anova_lm(model)
                         st.dataframe(anova_table)
+                        data_grouped = data.groupby([categorica, categorica_2])[continua].mean().reset_index()
+                        st.subheader(f'Análise das médias para a interação dos fatores  {categorica} e {categorica_2}')
+                        st.dataframe(data_grouped)
                         st.write(f"R squared adjusted: {model.rsquared_adj}")
                         p_value = anova_table['PR(>F)'][2]
 
@@ -1044,7 +1063,14 @@ with tab1:
                                 st.write(f"R squared adjusted: {model.rsquared_adj}")
                                 p_value1 = anova_table['PR(>F)'][1]
                                 p_value2 = anova_table['PR(>F)'][0]
+                                data_grouped1 = data.groupby(categorica)[continua].mean().reset_index()
 
+                                st.subheader(f'Análise das médias para o fator {categorica}')
+                                st.dataframe(data_grouped1)
+                                data_grouped2 = data.groupby(categorica_2)[continua].mean().reset_index()
+
+                                st.subheader(f'Análise das médias para o fator {categorica_2}')
+                                st.dataframe(data_grouped2)
                                 if p_value1 < 0.05:
                                     st.subheader(f'Análise de tukey para  o fator   {categorica}')
 
@@ -1059,6 +1085,8 @@ with tab1:
                                         st.pyplot(fig11)
                                     with col3:
                                         st.pyplot(fig50)
+
+                                    data_grouped = data.groupby([categorica, categorica_2])[continua].mean().reset_index()
 
 
                                 else:
