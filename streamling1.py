@@ -22,7 +22,7 @@ from scipy import stats
 from statsmodels.stats.anova import anova_lm
 from statsmodels.stats.multicomp import pairwise_tukeyhsd
 from streamlit import selectbox
-
+from statsmodels.stats.diagnostic import acorr_ljungbox
 
 
 
@@ -33,6 +33,14 @@ st.set_page_config(
     layout="centered",
 )
 
+if not st.user.is_authenticated:
+    st.title("Faça login para continuar")
+    st.button("Login com Google", on_click=st.login)
+    st.stop()
+
+st.title("Você está logado!")
+st.markdown(f"Bem-vindo, {st.user.name} 👋")
+st.button("Logout", on_click=st.logout)
 
 
 tab1, tab2, tab3 = st.tabs(["Pré-processamento e Análise descritiva", "Gráficos", "Pressupostos-ANOVA/ANOVA/Post-hoc teste "])
@@ -347,6 +355,8 @@ with tab1:
                                             mime="image/png"  # Tipo MIME do arquiv
                                         )
 
+                                    data_grouped2 = data.groupby(categorica)[continua].describe().reset_index()
+                                    st.dataframe(data_grouped2)
 
 
 
@@ -446,7 +456,7 @@ with tab1:
                 if p_value < 0.05:
                     reject = 'Rejeita a H0'
                     homoge_neo = 'não são '
-                    decisão = 'Os resíduos não são homogênos(iguais)'
+                    decisao = 'Os resíduos não são homogênos(iguais)'
                 else:
                     reject = 'Não rejeita H0'
                     homoge_neo = 'são '
@@ -457,11 +467,33 @@ with tab1:
                 st.success(reject)
                 st.success(decisao)
 
+                st.subheader('Independência dos resíduos:')
+                st.write('H0: Os resíduos não são independentes(Não há autocorrelação)')
+                st.write('HA: Os resíduos são dependentes(Há correlação)')
+                st.write('Alfa = 0.05')
+                # Teste de Ljung-Box
+                lb_test = acorr_ljungbox(model.resid, lags=[1],
+                                         return_df=True)  # lags=[1] testa apenas para defasagem 1
+
+                st.dataframe(lb_test)
+                p_valor = lb_test['lb_pvalue'].values[0]
+
+                if p_valor >=0.05:
+                    st.success('Os resíduos não são independentes (Não há autocorrelação')
+                else:
+                    st.warning('Os resíduos são dependentes (Há alta correlação')
+
+
+
+
                 st.header('ANOVA')
                 model = smf.ols(formula, data=data).fit()
                 anova_table = anova_lm(model)
                 st.dataframe(anova_table)
                 st.write(f"R squared adjusted: {model.rsquared_adj}")
+                data_grouped2 = data.groupby(categorica)[continua].mean().reset_index()
+                st.dataframe(data_grouped2)
+
                 p_value = anova_table['PR(>F)'][0]
 
 
@@ -512,7 +544,7 @@ with tab1:
             else:
                 st.write(f'Você  tem **NA** nas  variáveis de seus dados  ')
                 st.dataframe(data_na)
-                st.write('Você gostaria de retira  as **NAs** ou substituir por valores médios?')
+                st.write('Você gostaria de retirar  as **NAs** ou substituir por valores médios?')
                 escolha_2 = st.radio("Você deseja ?", ["Substituir por Valores médios", "Retirar Na"])
                 if escolha_2 == "Substituir por Valores médios":
                     data = data.fillna(data.median(numeric_only=True))
@@ -707,7 +739,7 @@ with tab1:
                                         st.warning('Escolha dois níveis diferentes')
 
 
-
+#escolha_8
                             escolha_8 = st.radio(f"Você gostaria de alterar os níveis da variável categórica:{categorica_2}", ['Sim', 'Não'])
                             if escolha_8 ==  'Sim':
                                 data_grouped = data[categorica_2].unique()
@@ -732,7 +764,7 @@ with tab1:
                                     with st.spinner("Por favor, aguarde..."):
                                         st.subheader(f"Gráfico de interação  {categorica} e {categorica_2}")
                                         fig, ax = plt.subplots(figsize=(14, 8))
-                                        sns.boxplot(x=Axis_x, y=Eixo_y, hue=dentro_1,order=ordem_desejada,hue_order= ordem_desejada2, palette="Set2", data=data, ax=ax)
+                                        sns.boxplot(x=Axis_x, y=Eixo_y, hue=dentro_1,order=ordem_desejada,hue_order= ordem_desejada2, palette=cores, data=data, ax=ax)
                                         ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
                                         ax.set_xlabel(nome_eixo_x, fontsize=14, weight='bold')
                                         sns.despine(offset=10, trim=True)
@@ -1012,7 +1044,7 @@ with tab1:
                         if p_value < 0.05:
                             reject = 'Rejeita a H0'
                             homoge_neo = 'não são '
-                            decisão = 'Os resíduos não são homogênos(iguais)'
+                            decisao = 'Os resíduos não são homogênos(iguais)'
                         else:
                             reject = 'Não rejeita H0'
                             homoge_neo = 'são '
@@ -1022,10 +1054,28 @@ with tab1:
                         st.success(f'a variância dos níveis comparados {homoge_neo} homogêneos')
                         st.success(reject)
                         st.success(decisao)
+                        st.subheader('Independência dos resíduos:')
+                        st.write('H0: Os resíduos não são independentes(Não há correlação )')
+                        st.write('HA: Os resíduos são dependentes(Há correlação)')
+                        st.write('Se p<0.05, então rejeita H0: os resíduos são autocorrelacionados')
+
+                        # Teste de Ljung-Box
+                        lb_test = acorr_ljungbox(model.resid, lags=[1],
+                                                 return_df=True)  # lags=[1] testa apenas para defasagem 1
+
+                        st.dataframe(lb_test)
+                        p_valor = lb_test['lb_pvalue'].values[0]
+
+                        if p_valor >= 0.05:
+                            st.success('Os resíduos não são  dependentes (Não há autocorrelação)')
+                            st.success(p_valor)
+                        else:
+                            st.warning('Os resíduos são dependentes (Há alta correlação)')
+                            st.warning(f'p-valor = {p_valor}')
 
                         st.header('ANOVA')
-                        model = smf.ols(formula, data=data).fit()
-                        anova_table = anova_lm(model)
+                        model1 = smf.ols(formula, data=data).fit()
+                        anova_table = anova_lm(model1)
                         st.dataframe(anova_table)
                         data_grouped = data.groupby([categorica, categorica_2])[continua].mean().reset_index()
                         st.subheader(f'Análise das médias para a interação dos fatores  {categorica} e {categorica_2}')
