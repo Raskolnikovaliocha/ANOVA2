@@ -223,11 +223,12 @@ with tab1:
                     # cálculo do cv
                     cv2 = np.std(cv) / np.mean(cv) * 100
                     st.write(f"CV% = {cv2}")
+                    st.warning('Se quiser continuar a análise, então clica na aba 2 acima **Pressupostos da Anova**')
 
 
-                else:
-                    st.warning("selecione as variáveis")
-                st.warning('Se quiser continuar a análise, então clica na aba 2 acima **Pressupostos da Anova**')
+
+
+
 
                 with tab2:
                     st.header('Análise exploratória')
@@ -271,12 +272,11 @@ with tab1:
 
                             escolha_7 = st.radio(f"Você gostaria de alterar o nível da variável categórica: {categorica}?",
                                                  ['Sim', 'Não'])
+
                             if escolha_7 == 'Sim':
                                 data_grouped = data[categorica].unique()
                                 lista = list(data_grouped)
-                                st.write(lista)
                                 tamanho = len(lista)
-                                st.write(tamanho)
                                 ordem_desejada = []
                                 for k in range(tamanho):
                                     selecionado = st.selectbox(f'Escolha a ordem do nível {1+k} ', ['Selecione'] + lista,
@@ -289,8 +289,31 @@ with tab1:
                                                                     value=Eixo_y)
                                         nome_eixo_x = st.text_input("Digite o nome que você quer para o eixo X:",
                                                                     value=Axis_x)
+                                        # Criar um slider somente para valores máximos:
+                                        max_valor = data[continua].max()
+                                        valor_inicial = max_valor  # arredonda para o próximo inteiro
 
+                                        ymax = st.number_input(
+                                            label="Valor máximo do eixo Y (escala)",
+                                            min_value=0.00,
+                                            max_value=1000000.00,
+                                            value=valor_inicial,
+                                            step=0.01
+                                        )
 
+                                        font_opcao = ["serif",  "sans-serif",   "monospace",   "Arial", "Helvetica","Verdana" ,"Tahoma", "Calibri",
+    "DejaVu Sans",
+    "Geneva",
+    "Open Sans",
+    "Roboto",
+    "Times New Roman",
+    "Georgia",
+    "Garamond",
+    "Cambria",
+    "DejaVu Serif",
+    "Computer Modern"]
+
+                                        font1 = st.selectbox('Escolha a fonte dos eixos e rótulos', font_opcao, key = '87')
 
                                         options = ["Blues", "BuGn", "Set1", "Set2", "Set3", "viridis", "magma", "Pastel1",
                                                    "Pastel2", "colorblind", "Accent", "tab10", "tab20", "tab20b", 'tab20c',
@@ -301,6 +324,12 @@ with tab1:
                                         st.success(f"Você escolheu: {cores}.")
                                         if cores == 'Cores':
                                             cores = cor_padrão
+
+                                            # Criar um slider somente para valores máximos:
+                                            max_valor = data[continua].max()
+                                            valor_inicial = max_valor  # arredonda para o próximo inteiro
+
+
 
                                         st.header('Gráfico boxplot')
                                         fig23, ax = plt.subplots(figsize=(10, 6))
@@ -330,10 +359,29 @@ with tab1:
                                         fig3, ax = plt.subplots(figsize=(10, 6))
                                         sns.barplot(x=Axis_x, y=Eixo_y,  order=ordem_desejada, palette=cores,
                                                     errorbar='sd',
-                                                    width=0.5, data=data, ax=ax)
+                                                    width=0.5,linewidth = 1, edgecolor = 'black', data=data, ax=ax)
                                         ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
                                         ax.set_xlabel(nome_eixo_x, fontsize=14, weight='bold')
-                                        plt.ylim(0)
+                                        ax.set_ylim(0, ymax)#ax.spines['left'].set_linewidth(3)
+                                        ax.set_ylim(0, ymax)  # ax.spines['left'].set_linewidth(3)
+                                        cor = 'black'
+                                        tom = 'bold'
+                                        # Modificar as espinhas inferior e esquerda, colorindo-as
+                                        # Esconder as espinhas superior e direita
+                                        ax.spines['top'].set_visible(False)
+                                        ax.spines['right'].set_visible(False)
+
+                                        ax.spines['bottom'].set_linewidth(1)
+                                        ax.spines['bottom'].set_color('black')
+                                        ax.spines['left'].set_linewidth(1)
+                                        ax.spines['left'].set_color('black')
+                                        ax.tick_params(axis='y', labelsize=17, colors=cor)#tamanho dos números
+                                        ax.set_xticklabels(ax.get_xticklabels(), fontsize=18, fontweight='bold',
+                                                           fontfamily=font1 )#tamangho das letras do rótulo
+                                        ax.set_ylabel(nome_eixo_y, fontsize=18, weight='bold', family=font1 )#tamanho dos nomes das variáveis y
+                                        ax.set_xlabel(nome_eixo_x, fontsize
+                                        =18, weight='bold', family=font1 )#tamanho dos nomes das variáveis x
+
                                         # sns.despine(offset=10, trim=True)
                                         st.pyplot(fig3)
 
@@ -353,11 +401,11 @@ with tab1:
 
                                         data_grouped2 = data.groupby(categorica)[continua].describe().reset_index()
                                         st.dataframe(data_grouped2)
+                            else:
+                                st.warning('Escolha as variáveis diferentemente!')
 
 
 
-                                else:
-                                    st.warning(f'Escolha {k+1} níveis diferentes')
                 with tab3:
 
                     st.header(f"Pressupostos da ANOVA ")
@@ -689,9 +737,10 @@ with tab1:
 
 
                             escolha_6 = st.radio('Você gostaria de alterar o gráfico ?', ['Sim', 'Não '])
-                            if escolha_6 ==  'Sim':
+                            if escolha_6 ==  'Não ':
+                                st.warning('Escolha sim para prosseguir com  a análise dos fatores ')
 
-
+                            else:
 
                                 escolha_7 = st.radio( f"Você gostaria de alterar o nível da variável categórica: {categorica}?",['Sim', 'Não'])
                                 if escolha_7 == 'Sim':
@@ -717,22 +766,7 @@ with tab1:
                                                 cores = cor_padrão
 
 
-                                            fig, ax = plt.subplots(figsize=(10, 6))
-                                            sns.boxplot(x=Axis_x, y=Eixo_y, hue=dentro_1, order=ordem_desejada,
-                                                         palette=cores, data=data, ax=ax)
-                                            sns.despine(offset=10, trim=True)
-                                            st.pyplot(fig)
 
-                                            st.subheader('Gráfico de barras')
-                                            fig3, ax = plt.subplots(figsize=(10, 6))
-                                            sns.barplot(x=Axis_x, y=Eixo_y, hue=dentro_1, order=ordem_desejada, palette=cores, errorbar='sd',
-                                                        width=0.5, data=data, ax=ax)
-                                            plt.ylim(0)
-                                            # sns.despine(offset=10, trim=True)
-                                            st.pyplot(fig3)
-
-                                        else:
-                                            st.warning('Escolha dois níveis diferentes')
 
 
     #escolha_8
@@ -851,355 +885,346 @@ with tab1:
                                             st.dataframe(data_grouped)
 
 
-
-
-
-
-
-
-
-
-
-                                else:
-
-
-                                        st.warning('Escolha dois níveis diferentes')
-
-
-                            escolha_10 = st.radio('Você gostaria de ver os gráfico sem interação?',['Sim', 'Não'])
-                            if escolha_10 == 'Sim':
-                                st.subheader(f'Gráfico {categorica_2} ')
-                                fig51, ax = plt.subplots(figsize=(14, 8))
-                                sns.boxplot( y=Eixo_y, hue=dentro_1,
-                                            hue_order=ordem_desejada2, palette=cores,  data=data, ax=ax)
-                                ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
-                                sns.despine(offset=10, trim=True)
-                                st.pyplot(fig51)
-
-                                fig51.savefig(f"Gráfico {categorica_2}.png",dpi=300,
-                                            bbox_inches='tight')  # Sem espaço antes de .png
-
-                                with open(f"Gráfico {categorica_2}.png", "rb") as f:
-                                    st.download_button(
-                                        label="Baixar o gráfico",
-                                        data=f,
-                                        file_name=f"Gráfico {categorica_2}.png",
-                                        mime="image/png"
-
-                                    )
-
-
-
-                                    #gráfico de barras:
-                                    st.subheader(f'Gráfico {categorica_2} ')
-                                    fig8, ax = plt.subplots(figsize=(14, 8))
-                                    sns.barplot (y=Eixo_y, hue=dentro_1,
-                                                hue_order=ordem_desejada2, palette=cores, linewidth = 1, edgecolor = 'black',width = 0.4, data=data, ax=ax)
-                                    ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
-                                    plt.ylim(0)
-                                    st.pyplot(fig8)
-
-                                    fig8.savefig(f"Gráfico de barras {categorica_2}.png", dpi=300,
-                                                bbox_inches='tight')  # Sem espaço antes de .png
-
-                                    with open(f"Gráfico de barras {categorica_2}.png", "rb") as f:
-                                        st.download_button(
-                                            label="Baixar o gráfico",
-                                            data=f,
-                                            file_name=f"Gráfico de barras {categorica_2}.png",
-                                            mime="image/png"
-
-                                        )
-
-                                        data_grouped2 = data.groupby(categorica_2)[continua].describe().reset_index()
-
-                                        st.subheader(f'Análise das médias para o fator {categorica_2}')
-                                        st.dataframe(data_grouped2)
-
-
-
-
-
-
-                                st.subheader(f"Gráfico {categorica}")
-
-                                fig50, ax = plt.subplots(figsize=(14, 8))
-                                sns.boxplot(x=Axis_x, y=Eixo_y, order=ordem_desejada,
-                                            palette= cores, data=data, ax=ax)
-                                ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
-                                ax.set_xlabel(nome_eixo_x, fontsize=14, weight='bold')
-                                sns.despine(offset=10, trim=True)
-                                st.pyplot(fig50)
-
-                                # Salvar a figura com nome seguro
-                                fig50.savefig(f"Gráfico {categorica}.png", dpi=300,bbox_inches='tight')
-
-                                # Botão de download
-                                with open(f"Gráfico {categorica}.png", "rb") as f:
-                                    st.download_button(
-                                        label="Baixar o gráfico",
-                                        data=f,
-                                        file_name=f"Gráfico {categorica}.png",
-                                        mime="image/png"
-                                    )
-
-
-
-                                    #gráfico de barras:
-
-                                    st.subheader(f"Gráfico de barras {categorica}")
-
-                                    fig11, ax = plt.subplots(figsize=(14, 8))
-                                    sns.barplot(x=Axis_x, y=Eixo_y, order=ordem_desejada,
-                                                palette=cores,linewidth = 1, edgecolor = 'black',width = 0.4, data=data, ax=ax)
-                                    ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
-                                    ax.set_xlabel(nome_eixo_x, fontsize=14, weight='bold')
-                                    #sns.despine(offset=10, trim=True)
-                                    plt.ylim(0)
-                                    st.pyplot(fig11)
-
-                                    # Salvar a figura com nome seguro
-                                    fig11.savefig(f"Gráfico barras2 {categorica}.png", dpi=300, bbox_inches='tight')
-
-                                    # Botão de download
-                                    with open(f"Gráfico barras2 {categorica}.png", "rb") as f:
-                                        st.download_button(
-                                            label="Baixar o gráfico",
-                                            data=f,
-                                            file_name=f"Gráfico barras2 {categorica}.png",
-                                            mime="image/png"
-                                        )
-
-                                    data_grouped1 = data.groupby(categorica)[continua].describe().reset_index()
-
-                                    st.subheader(f'Análise das médias para o fator {categorica}')
-                                    st.dataframe(data_grouped1)
-
-
-                        with tab3:
-                            st.header(f"Pressupostos da ANOVA ")
-                            st.write(f'Modelo completo: {categorica}:{categorica_2}')
-                            st.write(f"Parâmetro: {continua}")
-                            st.subheader('Teste de normalidade de Shapiro Wilk')
-                            st.write('H0: Os resíduos seguem uma distribuição normal ')
-                            st.write('Se P < 0.05, então rejeita H0 : O resíduos não segue uma distribuição normal ')
-
-
-
-                            formula = f'{continua}~{categorica_2}*{categorica}'
-                            # print(formula)
-                            # modelo
-                            model = smf.ols(formula, data= data).fit()
-                            df_resid = data.copy()
-                            df_resid['Residuos2'] = model.resid
-                            stat, p_valor = shapiro(df_resid['Residuos2'])
-                            if p_valor > 0.05:
-                                reject = 'Não rejeita a H0'
-                                decisao= 'Os resíduos  seguem uma distribuição  normal '
-                                st.success(f' P-valor =  {p_valor}')
-                                st.success(f'Decisão {reject}')
-                                st.success(decisao )
-                            else:
-                                reject = 'Rejeita H0 '
-                                decisao = 'Os resíduos não  seguem uma distribuição  normal '
-                                st.success(f' P-valor =  {p_valor}')
-                                st.success(f'Decisão {reject}')
-                                st.success(decisao)
-                            st.subheader('Curva de distribuição KDE')
-                            # plotar a curva de KDE
-                            fig5, ax = plt.subplots()
-                            sns.kdeplot(data=df_resid, x= 'Residuos2', fill=True, alpha=0.3)
-                            ax.set_title(f"Curva de KDE para visualização de normalidade do modelo {categorica}-{categorica_2}")
-                            plt.axvline(0, color='red', linestyle='dashed', linewidth=1)  # Linha central em 0
-                            # sns.stripplot(x=zscore, color='black', jitter=True, alpha=0.5, ax=ax)
-                            st.pyplot(fig5)
-
-                            # Anderson Darling test
-                            # Teste de normalidade de Anderson darling
-
-
-                            st.header("Teste de Normalidade dos resíduos ")
-                            st.subheader('Anderson Darling ')
-                            st.write(f'H0: Os resíduos do modelo: {categorica}-{categorica_2} seguem distribuição normal ')
-                            st.write('H0: Se valor crítico > valor estatístico, então não rejeita H0')
-                            test = anderson(df_resid['Residuos2'], dist='norm')
-                            critical_value = test.critical_values[2]  # O valor crítico para o nível de 5%
-
-                            if test.statistic > critical_value:
-                                reject2 = 'Rejeita H0'
-                                resultado = "Os resíduos não seguem uma distribuição normal "
-                            else:
-                                reject2 = 'Não rejeita H0'
-                                resultado = 'Os resíduos seguem uma distribuição normal '
-
-                            # Exibindo os resultados
-                            print(linha)
-                            st.success(f' Valor crítico: {critical_value} ')
-                            st.success(f'Estatística do teste:  {test.statistic}')
-                            st.success(reject2)
-                            st.success(resultado)
-
-                            #Homogneidade da variância:
-                            st.header('Homogeneidade de variância')
-                            st.subheader("Teste de levene")
-                            st.write('H0: A variãncia dos grupos comparados são iguais a um nível de significância de 5%')
-                            st.write('Se p-valor <0.05, então rejeita H0 e os resíduos não seguem distribuição normal')
-                            agrupamento = df_resid.groupby(categorica)
-                            grupo = []
-                            for nome, dados_grupo in agrupamento:
-                                # print(dados_grupo['Residuos'].values)
-                                grupo.append(dados_grupo['Residuos2'].values)
-                                # print(x)
-                            stat, p_value = stats.levene(*grupo)
-                            if p_value < 0.05:
-                                reject = 'Rejeita a H0'
-                                homoge_neo = 'não são '
-                                resposta = 'Os resíduos não seguem uma distribuição normal'
-                            else:
-                                reject = 'Não rejeita H0'
-                                homoge_neo = 'são '
-                                resposta = 'Os resíduos seguem uma distribuição normal '
-                            st.success(
-                                f' P-valor :  {p_value}' )
-                            st.success(f"A variância dos níveis comparados {homoge_neo} homogêneos")
-                            st.success(f'Decisão:  {reject} ')
-                            st.success(resposta)
-
-
-
-
-                            #teste de barlett
-                            st.subheader('Teste de barlett para homogeneidade de variância')
-                            st.write('H0: A variãncia dos grupos comparados são iguais a um nível de significância de 5%')
-                            st.write('Se p-valor <0.05, então rejeita H0 e os resíduos não seguem distribuição normal')
-                            stat, p = stats.bartlett(*grupo)
-                            if p_value < 0.05:
-                                reject = 'Rejeita a H0'
-                                homoge_neo = 'não são '
-                                decisao = 'Os resíduos não são homogênos(iguais)'
-                            else:
-                                reject = 'Não rejeita H0'
-                                homoge_neo = 'são '
-                                decisao = ' As variâncias dos resíduos são homogêneos '
-
-                            st.success(f'P-valor :  {p_value}')
-                            st.success(f'a variância dos níveis comparados {homoge_neo} homogêneos')
-                            st.success(reject)
-                            st.success(decisao)
-                            st.subheader('Independência dos resíduos:')
-                            st.write('H0: Os resíduos não são independentes(Não há correlação )')
-                            st.write('HA: Os resíduos são dependentes(Há correlação)')
-                            st.write('Se p<0.05, então rejeita H0: os resíduos são autocorrelacionados')
-
-                            # Teste de Ljung-Box
-                            lb_test = acorr_ljungbox(model.resid, lags=[1],
-                                                     return_df=True)  # lags=[1] testa apenas para defasagem 1
-
-                            st.dataframe(lb_test)
-                            p_valor = lb_test['lb_pvalue'].values[0]
-
-                            if p_valor >= 0.05:
-                                st.success('Os resíduos não são  dependentes (Não há autocorrelação)')
-                                st.success(p_valor)
-                            else:
-                                st.warning('Os resíduos são dependentes (Há alta correlação)')
-                                st.warning(f'p-valor = {p_valor}')
-
-                            st.header('ANOVA')
-                            model1 = smf.ols(formula, data=data).fit()
-                            anova_table = anova_lm(model1)
-                            st.dataframe(anova_table)
-                            data_grouped = data.groupby([categorica, categorica_2])[continua].mean().reset_index()
-                            st.subheader(f'Análise das médias para a interação dos fatores  {categorica} e {categorica_2}')
-                            st.dataframe(data_grouped)
-                            st.write(f"R squared adjusted: {model.rsquared_adj}")
-                            p_value = anova_table['PR(>F)'][2]
-
-                            if p_value < 0.05:
-                                print(f'Análise de tukey para o moddelo {categorica}: {categorica_2}')
-                                df_clean2 = data.copy()
-                                df_clean2['Combinação'] = df_clean2[categorica].astype(str) + ':' + df_clean2[
-                                    categorica_2].astype(str)
-                                # Garantindo que a coluna Combinação seja categórica
-                                df_clean2['Combinação'] = pd.Categorical(df_clean2['Combinação'])
-
-                                mc = MultiComparison(df_clean2.iloc[:, 2], df_clean2['Combinação'])
-                                tukey_test = mc.tukeyhsd(alpha=0.05)
-                                st.dataframe(tukey_test.summary())
-                                #gráfico
-                                st.pyplot(fig2)
-
-                            else:
-                                st.warning('O testde tukey não pode ser mostrado, pois não houve um p-valor significativo na interação')
-                                st.warning(f'O p-valor foi de {p_value}')
-                                st.warning('Que está acima de 0.05')
-                                anova2 = st.radio('Você deseja fazer a análise dos fatores isolados?', ['Sim','Não'])
-
-                                if anova2 == 'Sim':
-                                    st.header('Análise dos fatores isolados')
-                                    st.subheader(f'Modelo: {categorica} +{categorica_2}')
-                                    formula = f'{continua}~{categorica}+{categorica_2}'
-                                    model = smf.ols(formula, data=data).fit()
-                                    anova_table1 = anova_lm(model)
-                                    st.dataframe(anova_table1)
-                                    st.write(f"R squared adjusted: {model.rsquared_adj}")
-                                    p_value1 = anova_table['PR(>F)'][1]
-                                    p_value2 = anova_table['PR(>F)'][0]
-                                    data_grouped1 = data.groupby(categorica)[continua].mean().reset_index()
-
-                                    st.subheader(f'Análise das médias para o fator {categorica}')
-                                    st.dataframe(data_grouped1)
-                                    data_grouped2 = data.groupby(categorica_2)[continua].mean().reset_index()
-
-                                    st.subheader(f'Análise das médias para o fator {categorica_2}')
-                                    st.dataframe(data_grouped2)
-                                    if p_value1 < 0.05:
-                                        st.subheader(f'Análise de tukey para  o fator   {categorica}')
-
-                                        categorico1 = pd.Categorical(data.iloc[:,0]
-                                           )  # transformando a primeira coluna em categórica
-
-                                        mc = MultiComparison(data.iloc[:, 2], categorico1)
-                                        tukey_test1 = mc.tukeyhsd(alpha=0.05)
-                                        st.dataframe(tukey_test1.summary())
-                                        col2, col3 = st.columns(2)
-                                        with col2:
-                                            st.pyplot(fig11)
-                                        with col3:
-                                            st.pyplot(fig50)
-
-                                        data_grouped = data.groupby([categorica, categorica_2])[continua].mean().reset_index()
-
-
-                                    else:
-                                        st.warning(f'O valor de p para o fator {categorica} não foi significativo')
-                                        st.warning(p_value1)
-                                        st.warning('Não prossegue a análise de contraste')
-
-                                    if p_value2< 0.05:
-
-                                        st.subheader(f'Análise de tukey para  o fator  {categorica_2}')
-                                        categorico2 = pd.Categorical(data.iloc[:,1]
-                                           )  # transforma a segunda coluna em categórica
-
-                                        mc2= MultiComparison(data.iloc[:, 2], categorico2)
-                                        tukey_test2 = mc2.tukeyhsd(alpha=0.05)
-                                        st.dataframe(tukey_test2.summary())
-                                        cols = st.columns(2)  # Cria 3 colunas
-                                          # Pega a primeira coluna
-                                        col2 = cols[0]
-                                        col3 = cols[1]
-
-                                        with col2:
+                                    escolha_10 = st.radio('Você gostaria de ver os gráfico sem interação?',['Sim', 'Não'])
+                                    if escolha_10 == 'Sim':
+                                        st.subheader(f'Gráfico {categorica_2} ')
+                                        fig51, ax = plt.subplots(figsize=(14, 8))
+                                        sns.boxplot( y=Eixo_y, hue=dentro_1,
+                                                    hue_order=ordem_desejada2, palette=cores,  data=data, ax=ax)
+                                        ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
+                                        sns.despine(offset=10, trim=True)
+                                        st.pyplot(fig51)
+
+                                        fig51.savefig(f"Gráfico {categorica_2}.png",dpi=300,
+                                                    bbox_inches='tight')  # Sem espaço antes de .png
+
+                                        with open(f"Gráfico {categorica_2}.png", "rb") as f:
+                                            st.download_button(
+                                                label="Baixar o gráfico",
+                                                data=f,
+                                                file_name=f"Gráfico {categorica_2}.png",
+                                                mime="image/png"
+
+                                            )
+
+
+
+                                            #gráfico de barras:
+                                            st.subheader(f'Gráfico {categorica_2} ')
+                                            fig8, ax = plt.subplots(figsize=(14, 8))
+                                            sns.barplot (y=Eixo_y, hue=dentro_1,
+                                                        hue_order=ordem_desejada2, palette=cores, linewidth = 1, edgecolor = 'black',width = 0.4, data=data, ax=ax)
+                                            ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
+                                            plt.ylim(0)
                                             st.pyplot(fig8)
-                                        with col3:
-                                            st.pyplot(fig51)
+
+                                            fig8.savefig(f"Gráfico de barras {categorica_2}.png", dpi=300,
+                                                        bbox_inches='tight')  # Sem espaço antes de .png
+
+                                            with open(f"Gráfico de barras {categorica_2}.png", "rb") as f:
+                                                st.download_button(
+                                                    label="Baixar o gráfico",
+                                                    data=f,
+                                                    file_name=f"Gráfico de barras {categorica_2}.png",
+                                                    mime="image/png"
+
+                                                )
+
+                                                data_grouped2 = data.groupby(categorica_2)[continua].describe().reset_index()
+
+                                                st.subheader(f'Análise das médias para o fator {categorica_2}')
+                                                st.dataframe(data_grouped2)
 
 
-                                    else:
-                                        st.warning(f'O valor de p para o fator {categorica_2} não foi significativo')
-                                        st.warning(p_value2)
-                                        st.warning('Não prossegue a análise de contraste')
+
+
+
+
+                                        st.subheader(f"Gráfico {categorica}")
+
+                                        fig50, ax = plt.subplots(figsize=(14, 8))
+                                        sns.boxplot(x=Axis_x, y=Eixo_y, order=ordem_desejada,
+                                                    palette= cores, data=data, ax=ax)
+                                        ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
+                                        ax.set_xlabel(nome_eixo_x, fontsize=14, weight='bold')
+                                        sns.despine(offset=10, trim=True)
+                                        st.pyplot(fig50)
+
+                                        # Salvar a figura com nome seguro
+                                        fig50.savefig(f"Gráfico {categorica}.png", dpi=300,bbox_inches='tight')
+
+                                        # Botão de download
+                                        with open(f"Gráfico {categorica}.png", "rb") as f:
+                                            st.download_button(
+                                                label="Baixar o gráfico",
+                                                data=f,
+                                                file_name=f"Gráfico {categorica}.png",
+                                                mime="image/png"
+                                            )
+
+
+
+                                            #gráfico de barras:
+
+                                            st.subheader(f"Gráfico de barras {categorica}")
+
+                                            fig11, ax = plt.subplots(figsize=(14, 8))
+                                            sns.barplot(x=Axis_x, y=Eixo_y, order=ordem_desejada,
+                                                        palette=cores,linewidth = 1, edgecolor = 'black',width = 0.4, data=data, ax=ax)
+                                            ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
+                                            ax.set_xlabel(nome_eixo_x, fontsize=14, weight='bold')
+                                            #sns.despine(offset=10, trim=True)
+                                            plt.ylim(0)
+                                            st.pyplot(fig11)
+
+
+                                            # Salvar a figura com nome seguro
+                                            fig11.savefig(f"Gráfico barras2 {categorica}.png", dpi=300, bbox_inches='tight')
+
+                                            # Botão de download
+                                            with open(f"Gráfico barras2 {categorica}.png", "rb") as f:
+                                                st.download_button(
+                                                    label="Baixar o gráfico",
+                                                    data=f,
+                                                    file_name=f"Gráfico barras2 {categorica}.png",
+                                                    mime="image/png"
+                                                )
+
+                                            data_grouped1 = data.groupby(categorica)[continua].describe().reset_index()
+
+                                            st.subheader(f'Análise das médias para o fator {categorica}')
+                                            st.dataframe(data_grouped1)
+
+                                anova_data = st.radio('Você quer prosseguir com a ANOVA?',['Sim', 'Não'])
+                                if anova_data =='Não':
+                                    st.success('A sua análise acaba por aqui')
+                                else:
+                                    st.success('Prossiga na terceira aba')
+
+                                    with tab3:
+                                        st.header(f"Pressupostos da ANOVA ")
+                                        st.write(f'Modelo completo: {categorica}:{categorica_2}')
+                                        st.write(f"Parâmetro: {continua}")
+                                        st.subheader('Teste de normalidade de Shapiro Wilk')
+                                        st.write('H0: Os resíduos seguem uma distribuição normal ')
+                                        st.write('Se P < 0.05, então rejeita H0 : O resíduos não segue uma distribuição normal ')
+
+
+
+                                        formula = f'{continua}~{categorica_2}*{categorica}'
+                                        # print(formula)
+                                        # modelo
+                                        model = smf.ols(formula, data= data).fit()
+                                        df_resid = data.copy()
+                                        df_resid['Residuos2'] = model.resid
+                                        stat, p_valor = shapiro(df_resid['Residuos2'])
+                                        if p_valor > 0.05:
+                                            reject = 'Não rejeita a H0'
+                                            decisao= 'Os resíduos  seguem uma distribuição  normal '
+                                            st.success(f' P-valor =  {p_valor}')
+                                            st.success(f'Decisão {reject}')
+                                            st.success(decisao )
+                                        else:
+                                            reject = 'Rejeita H0 '
+                                            decisao = 'Os resíduos não  seguem uma distribuição  normal '
+                                            st.success(f' P-valor =  {p_valor}')
+                                            st.success(f'Decisão {reject}')
+                                            st.success(decisao)
+                                        st.subheader('Curva de distribuição KDE')
+                                        # plotar a curva de KDE
+                                        fig5, ax = plt.subplots()
+                                        sns.kdeplot(data=df_resid, x= 'Residuos2', fill=True, alpha=0.3)
+                                        ax.set_title(f"Curva de KDE para visualização de normalidade do modelo {categorica}-{categorica_2}")
+                                        plt.axvline(0, color='red', linestyle='dashed', linewidth=1)  # Linha central em 0
+                                        # sns.stripplot(x=zscore, color='black', jitter=True, alpha=0.5, ax=ax)
+                                        st.pyplot(fig5)
+
+                                        # Anderson Darling test
+                                        # Teste de normalidade de Anderson darling
+
+
+                                        st.header("Teste de Normalidade dos resíduos ")
+                                        st.subheader('Anderson Darling ')
+                                        st.write(f'H0: Os resíduos do modelo: {categorica}-{categorica_2} seguem distribuição normal ')
+                                        st.write('H0: Se valor crítico > valor estatístico, então não rejeita H0')
+                                        test = anderson(df_resid['Residuos2'], dist='norm')
+                                        critical_value = test.critical_values[2]  # O valor crítico para o nível de 5%
+
+                                        if test.statistic > critical_value:
+                                            reject2 = 'Rejeita H0'
+                                            resultado = "Os resíduos não seguem uma distribuição normal "
+                                        else:
+                                            reject2 = 'Não rejeita H0'
+                                            resultado = 'Os resíduos seguem uma distribuição normal '
+
+                                        # Exibindo os resultados
+                                        print(linha)
+                                        st.success(f' Valor crítico: {critical_value} ')
+                                        st.success(f'Estatística do teste:  {test.statistic}')
+                                        st.success(reject2)
+                                        st.success(resultado)
+
+                                        #Homogneidade da variância:
+                                        st.header('Homogeneidade de variância')
+                                        st.subheader("Teste de levene")
+                                        st.write('H0: A variãncia dos grupos comparados são iguais a um nível de significância de 5%')
+                                        st.write('Se p-valor <0.05, então rejeita H0 e os resíduos não seguem distribuição normal')
+                                        agrupamento = df_resid.groupby(categorica)
+                                        grupo = []
+                                        for nome, dados_grupo in agrupamento:
+                                            # print(dados_grupo['Residuos'].values)
+                                            grupo.append(dados_grupo['Residuos2'].values)
+                                            # print(x)
+                                        stat, p_value = stats.levene(*grupo)
+                                        if p_value < 0.05:
+                                            reject = 'Rejeita a H0'
+                                            homoge_neo = 'não são '
+                                            resposta = 'Os resíduos não seguem uma distribuição normal'
+                                        else:
+                                            reject = 'Não rejeita H0'
+                                            homoge_neo = 'são '
+                                            resposta = 'Os resíduos seguem uma distribuição normal '
+                                        st.success(
+                                            f' P-valor :  {p_value}' )
+                                        st.success(f"A variância dos níveis comparados {homoge_neo} homogêneos")
+                                        st.success(f'Decisão:  {reject} ')
+                                        st.success(resposta)
+
+
+
+
+                                        #teste de barlett
+                                        st.subheader('Teste de barlett para homogeneidade de variância')
+                                        st.write('H0: A variãncia dos grupos comparados são iguais a um nível de significância de 5%')
+                                        st.write('Se p-valor <0.05, então rejeita H0 e os resíduos não seguem distribuição normal')
+                                        stat, p = stats.bartlett(*grupo)
+                                        if p_value < 0.05:
+                                            reject = 'Rejeita a H0'
+                                            homoge_neo = 'não são '
+                                            decisao = 'Os resíduos não são homogênos(iguais)'
+                                        else:
+                                            reject = 'Não rejeita H0'
+                                            homoge_neo = 'são '
+                                            decisao = ' As variâncias dos resíduos são homogêneos '
+
+                                        st.success(f'P-valor :  {p_value}')
+                                        st.success(f'a variância dos níveis comparados {homoge_neo} homogêneos')
+                                        st.success(reject)
+                                        st.success(decisao)
+                                        st.subheader('Independência dos resíduos:')
+                                        st.write('H0: Os resíduos não são independentes(Não há correlação )')
+                                        st.write('HA: Os resíduos são dependentes(Há correlação)')
+                                        st.write('Se p<0.05, então rejeita H0: os resíduos são autocorrelacionados')
+
+                                        # Teste de Ljung-Box
+                                        lb_test = acorr_ljungbox(model.resid, lags=[1],
+                                                                 return_df=True)  # lags=[1] testa apenas para defasagem 1
+
+                                        st.dataframe(lb_test)
+                                        p_valor = lb_test['lb_pvalue'].values[0]
+
+                                        if p_valor >= 0.05:
+                                            st.success('Os resíduos não são  dependentes (Não há autocorrelação)')
+                                            st.success(p_valor)
+                                        else:
+                                            st.warning('Os resíduos são dependentes (Há alta correlação)')
+                                            st.warning(f'p-valor = {p_valor}')
+
+                                        st.header('ANOVA')
+                                        model1 = smf.ols(formula, data=data).fit()
+                                        anova_table = anova_lm(model1)
+                                        st.dataframe(anova_table)
+                                        data_grouped = data.groupby([categorica, categorica_2])[continua].mean().reset_index()
+                                        st.subheader(f'Análise das médias para a interação dos fatores  {categorica} e {categorica_2}')
+                                        st.dataframe(data_grouped)
+                                        st.write(f"R squared adjusted: {model.rsquared_adj}")
+                                        p_value = anova_table['PR(>F)'][2]
+
+                                        if p_value < 0.05:
+                                            print(f'Análise de tukey para o moddelo {categorica}: {categorica_2}')
+                                            df_clean2 = data.copy()
+                                            df_clean2['Combinação'] = df_clean2[categorica].astype(str) + ':' + df_clean2[
+                                                categorica_2].astype(str)
+                                            # Garantindo que a coluna Combinação seja categórica
+                                            df_clean2['Combinação'] = pd.Categorical(df_clean2['Combinação'])
+
+                                            mc = MultiComparison(df_clean2.iloc[:, 2], df_clean2['Combinação'])
+                                            tukey_test = mc.tukeyhsd(alpha=0.05)
+                                            st.dataframe(tukey_test.summary())
+                                            #gráfico
+                                            st.pyplot(fig2)
+
+                                        else:
+                                            st.warning('O testde tukey não pode ser mostrado, pois não houve um p-valor significativo na interação')
+                                            st.warning(f'O p-valor foi de {p_value}')
+                                            st.warning('Que está acima de 0.05')
+                                            anova2 = st.radio('Você deseja fazer a análise dos fatores isolados?', ['Sim','Não'])
+
+                                            if anova2 == 'Sim':
+                                                st.header('Análise dos fatores isolados')
+                                                st.subheader(f'Modelo: {categorica} +{categorica_2}')
+                                                formula = f'{continua}~{categorica}+{categorica_2}'
+                                                model = smf.ols(formula, data=data).fit()
+                                                anova_table1 = anova_lm(model)
+                                                st.dataframe(anova_table1)
+                                                st.write(f"R squared adjusted: {model.rsquared_adj}")
+                                                p_value1 = anova_table['PR(>F)'][1]
+                                                p_value2 = anova_table['PR(>F)'][0]
+                                                data_grouped1 = data.groupby(categorica)[continua].mean().reset_index()
+
+                                                st.subheader(f'Análise das médias para o fator {categorica}')
+                                                st.dataframe(data_grouped1)
+                                                data_grouped2 = data.groupby(categorica_2)[continua].mean().reset_index()
+
+                                                st.subheader(f'Análise das médias para o fator {categorica_2}')
+                                                st.dataframe(data_grouped2)
+                                                if p_value1 < 0.05:
+                                                    st.subheader(f'Análise de tukey para  o fator   {categorica}')
+
+                                                    categorico1 = pd.Categorical(data.iloc[:,0]
+                                                       )  # transformando a primeira coluna em categórica
+
+                                                    mc = MultiComparison(data.iloc[:, 2], categorico1)
+                                                    tukey_test1 = mc.tukeyhsd(alpha=0.05)
+                                                    st.dataframe(tukey_test1.summary())
+                                                    col2, col3 = st.columns(2)
+                                                    with col2:
+                                                        st.pyplot(fig11)
+                                                    with col3:
+                                                        st.pyplot(fig50)
+
+                                                    data_grouped = data.groupby([categorica, categorica_2])[continua].mean().reset_index()
+
+
+                                                else:
+                                                    st.warning(f'O valor de p para o fator {categorica} não foi significativo')
+                                                    st.warning(p_value1)
+                                                    st.warning('Não prossegue a análise de contraste')
+
+                                                if p_value2< 0.05:
+
+                                                    st.subheader(f'Análise de tukey para  o fator  {categorica_2}')
+                                                    categorico2 = pd.Categorical(data.iloc[:,1]
+                                                       )  # transforma a segunda coluna em categórica
+
+                                                    mc2= MultiComparison(data.iloc[:, 2], categorico2)
+                                                    tukey_test2 = mc2.tukeyhsd(alpha=0.05)
+                                                    st.dataframe(tukey_test2.summary())
+                                                    cols = st.columns(2)  # Cria 3 colunas
+                                                      # Pega a primeira coluna
+                                                    col2 = cols[0]
+                                                    col3 = cols[1]
+
+                                                    with col2:
+                                                        st.pyplot(fig8)
+                                                    with col3:
+                                                        st.pyplot(fig51)
+
+
+                                                else:
+                                                    st.warning(f'O valor de p para o fator {categorica_2} não foi significativo')
+                                                    st.warning(p_value2)
+                                                    st.warning('Não prossegue a análise de contraste')
 
         escolhas = []
         if variavel == 3:
