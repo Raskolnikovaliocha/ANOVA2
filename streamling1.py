@@ -61,12 +61,12 @@ with tab1:
     modelo = st.radio('Você deseja ver o modelo de entrada da tabela?', ['Sim', 'Não '])
     if modelo == 'Sim':
         st.image("organizacao_tabela.png", caption="Modelo de tabela", width=300)
-        st.subheader('Configuração da *Planilha* ')
+        st.subheader('Configuração da **Planilha** ')
         st.warning('Células vazias devem ser preenchidas com **NA**')
         st.warning('Evitar colocar **pontuações** nos nomes das **variáveis**')
         st.warning('Evitar colocar **pontuações**  nos *níveis* das variáveis')
         st.warning('Seguir o modelo de preenchimento da **planilha** acima')
-        st.warning('Os eventos são **dependentes**, então não esqueça de **preencher sim **  em cada etapa')
+        st.warning('Os eventos são **dependentes**, então não esqueça de   **sim**  em cada etapa')
 
     if arquivo is  None:
         st.warning('Aguardando a escolha dos dados ')
@@ -822,6 +822,15 @@ with tab1:
                                                     nome_eixo_y = st.text_input("Digite o nome que você quer para o eixo Y:",
                                                                                 value=Eixo_y)
                                                     nome_eixo_x = st.text_input("Digite o nome que você quer para o eixo X:", value = Axis_x)
+                                                    font_opcao = ["serif", "sans-serif", "monospace", "Arial",
+                                                                  "Helvetica", "Verdana", "Tahoma", "Calibri",
+                                                                  "DejaVu Sans", "Geneva", "Roboto", "Times New Roman",
+                                                                  "Georgia", "Garamond", "Cambria", "DejaVu Serif",
+                                                                  "Computer Modern"]
+
+                                                    font2 = st.selectbox('Escolha a fonte dos eixos e rótulos',
+                                                                         font_opcao, key='88')
+
                                                     with st.spinner("Por favor, aguarde..."):
                                                         st.subheader(f"Gráfico de interação  {categorica} e {categorica_2}")
                                                         fig, ax = plt.subplots(figsize=(14, 8))
@@ -876,10 +885,10 @@ with tab1:
                                                         #ax.tick_params(axis = 'y', colors = cor )# cor do eixo y
 
 
-                                                        ax.set_xticklabels(ax.get_xticklabels(), fontsize=18, fontweight='bold', fontfamily = 'serif')
-                                                        ax.set_ylabel(nome_eixo_y, fontsize=18, weight='bold', family = 'serif')
-                                                        ax.set_xlabel(nome_eixo_x, fontsize=18, weight='bold', family = 'serif')
-                                                        plt.legend(title = categorica_2, frameon=False, prop={'weight': 'bold','size': 15,'family': 'serif'},title_fontproperties={'weight': 'bold','size': 16,'family': 'serif'})
+                                                        ax.set_xticklabels(ax.get_xticklabels(), fontsize=18, fontweight='bold', fontfamily = font2)
+                                                        ax.set_ylabel(nome_eixo_y, fontsize=18, weight='bold', family = font2)
+                                                        ax.set_xlabel(nome_eixo_x, fontsize=18, weight='bold', family = font2)
+                                                        plt.legend(title = categorica_2, frameon=False, prop={'weight': 'bold','size': 15,'family': font2},title_fontproperties={'weight': 'bold','size': 16,'family': font2})
                                                         plt.ylim(0)
                                                         st.pyplot(fig2)
 
@@ -934,6 +943,21 @@ with tab1:
                                                             sns.barplot (y=Eixo_y, hue=dentro_1,
                                                                         hue_order=ordem_desejada2, palette=cores, linewidth = 1, edgecolor = 'black',width = 0.4, data=data, ax=ax)
                                                             ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
+                                                            ax.set_ylim(0, ymax)  # ax.spines['left'].set_linewidth(3)
+                                                            cor = 'black'
+                                                            tom = 'bold'
+                                                            ax.spines['left'].set_linewidth(1)
+                                                            ax.spines['left'].set_color(cor)
+                                                            ax.tick_params(axis='y', labelsize=17, colors=cor)
+                                                            # ax.tick_params(axis = 'y', colors = cor )# cor do eixo y
+
+                                                            ax.set_xticklabels(ax.get_xticklabels(), fontsize=18,
+                                                                               fontweight='bold', fontfamily=font2)
+                                                            ax.set_ylabel(nome_eixo_y, fontsize=18, weight='bold',
+                                                                          family=font2)
+                                                            ax.set_xlabel(nome_eixo_x, fontsize=18, weight='bold',
+                                                                          family=font2)
+
                                                             plt.ylim(0)
                                                             st.pyplot(fig8)
 
@@ -966,7 +990,22 @@ with tab1:
                                                                     palette= cores, data=data, ax=ax)
                                                         ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
                                                         ax.set_xlabel(nome_eixo_x, fontsize=14, weight='bold')
-                                                        sns.despine(offset=10, trim=True)
+                                                        ax.set_ylim(0, ymax)  # ax.spines['left'].set_linewidth(3)
+                                                        cor = 'black'
+                                                        tom = 'bold'
+                                                        ax.spines['left'].set_linewidth(1)
+                                                        ax.spines['left'].set_color(cor)
+                                                        ax.tick_params(axis='y', labelsize=17, colors=cor)
+                                                        # ax.tick_params(axis = 'y', colors = cor )# cor do eixo y
+
+                                                        ax.set_xticklabels(ax.get_xticklabels(), fontsize=18,
+                                                                           fontweight='bold', fontfamily= font2)
+                                                        ax.set_ylabel(nome_eixo_y, fontsize=18, weight='bold',
+                                                                      family=font2)
+                                                        ax.set_xlabel(nome_eixo_x, fontsize=18, weight='bold',
+                                                                      family= font2)
+
+                                                        plt.ylim(0)
                                                         st.pyplot(fig50)
 
                                                         # Salvar a figura com nome seguro
@@ -992,7 +1031,21 @@ with tab1:
                                                                         palette=cores,linewidth = 1, edgecolor = 'black',width = 0.4, data=data, ax=ax)
                                                             ax.set_ylabel(nome_eixo_y, fontsize=14, weight='bold')
                                                             ax.set_xlabel(nome_eixo_x, fontsize=14, weight='bold')
-                                                            #sns.despine(offset=10, trim=True)
+                                                            ax.set_ylim(0, ymax)  # ax.spines['left'].set_linewidth(3)
+                                                            cor = 'black'
+                                                            tom = 'bold'
+                                                            ax.spines['left'].set_linewidth(1)
+                                                            ax.spines['left'].set_color(cor)
+                                                            ax.tick_params(axis='y', labelsize=17, colors=cor)
+                                                            # ax.tick_params(axis = 'y', colors = cor )# cor do eixo y
+
+                                                            ax.set_xticklabels(ax.get_xticklabels(), fontsize=18,
+                                                                               fontweight='bold', fontfamily=font2)
+                                                            ax.set_ylabel(nome_eixo_y, fontsize=18, weight='bold',
+                                                                          family=font2)
+                                                            ax.set_xlabel(nome_eixo_x, fontsize=18, weight='bold',
+                                                                          family=font2)
+
                                                             plt.ylim(0)
                                                             st.pyplot(fig11)
 
